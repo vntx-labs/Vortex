@@ -1,0 +1,7 @@
+module system-check
+name "System-Check"
+description "CPU, RAM und laufende Prozesse im Blick behalten"
+icon "utilities-system-monitor-symbolic"
+backend python
+entry "system_check.py"
+order 90

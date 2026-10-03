@@ -1,0 +1,9 @@
+call core.ensure_python_feature gtksourceview4
+if failed last
+    return 1
+end
+call gui.focus_code_editor
+if failed last
+    call core.show_error "Focus Code Editor konnte nicht gestartet werden. Prüfe GtkSourceView 4."
+end
+return 0

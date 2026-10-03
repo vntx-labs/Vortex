@@ -1,0 +1,7 @@
+module web-studio
+name "Web Studio"
+description "Webseiten gestalten und als HTML exportieren"
+icon "applications-internet-symbolic"
+backend dsl
+order 30
+entry "web-studio.vscript"

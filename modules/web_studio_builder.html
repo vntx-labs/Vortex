@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VeloOS Web Studio</title>
+    <style>
+        *{box-sizing:border-box}:root{color-scheme:dark;font:14px Inter,"Segoe UI",system-ui,sans-serif}
+        body{margin:0;height:100vh;min-width:900px;display:grid;grid-template-columns:248px minmax(420px,1fr) 286px;background:#0b1220;color:#e5edf8}
+        aside{min-height:0;overflow:auto;padding:20px 16px;background:#101a2b;border-right:1px solid #24334a}
+        aside.inspector{border-right:0;border-left:1px solid #24334a}
+        .brand{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:17px}
+        .brand-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#7c3aed);font-weight:800}
+        .sub{margin:0 0 18px;color:#91a2bb;font-size:12px;line-height:1.5}
+        .section-label{margin:23px 0 9px;color:#8395af;font-size:10px;font-weight:750;letter-spacing:.13em;text-transform:uppercase}
+        .component-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+        .element-item{min-height:64px;padding:9px 8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;border:1px solid #293952;border-radius:9px;background:#17243a;color:#eaf1fb;text-align:left;font-size:11px;cursor:grab;transition:.15s}
+        .element-item .icon{color:#82b4ff;font-size:17px}.element-item:hover{border-color:#5187df;background:#1c2e49;transform:translateY(-1px)}
+        #workspace{min-width:0;min-height:0;display:flex;flex-direction:column}
+        .toolbar{height:58px;flex:0 0 58px;display:flex;align-items:center;gap:7px;padding:0 15px;background:#101a2b;border-bottom:1px solid #24334a}
+        .toolbar-spacer{flex:1}button,.select-control{min-height:34px;padding:7px 10px;border:1px solid #31425c;border-radius:7px;background:#17253a;color:#e5edf8;font:inherit;font-size:12px}
+        .title-field{width:150px;min-width:90px;padding:8px;border:1px solid #31425c;border-radius:7px;background:#0b1525;color:#e5edf8;font:inherit;font-size:12px}
+        button{cursor:pointer}button:hover{background:#243b5b}.tool-button:disabled{opacity:.4;cursor:default}
+        .primary{background:#2563eb;border-color:#3b82f6;font-weight:700}.primary:hover{background:#1d4ed8}
+        .toolbar-divider{height:25px;width:1px;margin:0 4px;background:#2a3a52}#saveStatus{max-width:130px;color:#9aabc3;font-size:11px}
+        #preview{flex:1;min-height:0;overflow:auto;padding:32px 24px;display:flex;justify-content:center;align-items:flex-start;background-color:#0b1220;background-image:radial-gradient(#21324a 1px,transparent 1px);background-size:20px 20px}
+        #canvas{width:860px;max-width:100%;min-height:720px;padding:48px;background:#fff;color:#263248;box-shadow:0 24px 70px #0008;border-radius:12px;transition:width .2s}
+        .drop-hint{margin:210px auto;text-align:center;color:#8290a5;line-height:1.7}.drop-hint strong{display:block;color:#475569;font-size:18px}
+        .block{position:relative;margin:10px 0;padding:12px;border:1px solid transparent;border-radius:8px;cursor:grab}
+        .block:hover{border-color:#bfdbfe;background:#eff6ff88}.block.selected{border-color:#3b82f6;background:#eff6ff88}.block.dragging{opacity:.35}
+        .remove{position:absolute;z-index:2;right:4px;top:4px;width:25px;min-height:25px;padding:0;border:0;border-radius:6px;background:#fee2e2;color:#991b1b;opacity:0}
+        .block:hover .remove,.block.selected .remove{opacity:1}.editable{outline:none}.editable:focus{outline:2px solid #93c5fd;outline-offset:3px;border-radius:3px}
+        .cta{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:8px;background:#2563eb;color:white;text-decoration:none;font-weight:650}
+        .image-placeholder{min-height:185px;display:grid;place-items:center;border-radius:10px;background:#eff4fb;color:#64748b}
+        .studio-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:10px;background:#f8fafc}
+        .nav-links{display:flex;gap:18px;color:#53657d}.hero{padding:58px 34px;border-radius:14px;background:linear-gradient(135deg,#eaf2ff,#f5efff)}
+        .studio-card{padding:24px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;box-shadow:0 8px 24px #0f172a0d}
+        .studio-columns{display:grid;grid-template-columns:1fr 1fr;gap:20px}.studio-section{padding:34px 24px;border-radius:12px;background:#f8fafc}
+        .studio-footer{padding:26px 20px;border-top:1px solid #e2e8f0;color:#64748b}.studio-quote{padding:22px 26px;border-left:4px solid #3b82f6;background:#f1f5f9}
+        .studio-list{padding-left:24px}.studio-badge{display:inline-block;padding:5px 10px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:12px;font-weight:700}
+        .studio-divider{border:0;border-top:1px solid #cbd5e1}.studio-spacer{height:64px}.studio-form{display:grid;gap:10px;max-width:480px}
+        .studio-form input,.studio-form textarea{padding:11px;border:1px solid #cbd5e1;border-radius:7px}
+        .studio-pricing{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.studio-price{padding:22px;border:1px solid #dbe3ef;border-radius:14px;background:#fff}
+        .studio-price strong{display:block;font-size:30px}.studio-testimonial{padding:26px;border-radius:14px;background:#f5f3ff;color:#312e81}
+        .studio-faq details{padding:16px 4px;border-bottom:1px solid #dbe3ef}.studio-faq summary{cursor:pointer;font-weight:700}
+        .studio-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;text-align:center}.studio-stat{padding:18px;border-radius:12px;background:#eff6ff}
+        .studio-stat strong{display:block;color:#1d4ed8;font-size:28px}.studio-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+        .studio-gallery .image-placeholder{min-height:150px}.studio-callout{padding:24px;border-radius:12px;background:#ecfeff;border-left:4px solid #0891b2}
+        .studio-logos{display:flex;flex-wrap:wrap;justify-content:space-around;gap:20px;padding:20px;color:#64748b;font-size:18px;font-weight:750}
+        .field input[type=color]{height:38px;padding:3px}
+        #inspectorContent{display:grid;gap:11px}.field{display:grid;gap:6px}.field label{color:#a8b7ca;font-size:11px;font-weight:650}
+        .field input,.field select,.field textarea{width:100%;min-height:36px;padding:8px 9px;border:1px solid #30425d;border-radius:7px;background:#0b1525;color:#e5edf8}
+        .field textarea{min-height:68px;resize:vertical}.field-help{color:#8192aa;font-size:10px;line-height:1.45}
+        .inspector-empty{padding:13px;border:1px dashed #354761;border-radius:9px;color:#91a2bb;font-size:12px;line-height:1.6}
+        .preview-mode{grid-template-columns:minmax(0,1fr)!important}.preview-mode #palette,.preview-mode .inspector{display:none}.preview-mode .toolbar{justify-content:flex-end}
+        #imageInput,#projectInput{display:none}
+        @media(max-width:1120px){body{grid-template-columns:210px minmax(420px,1fr) 250px}.toolbar{gap:4px;padding:0 8px}button,.select-control{padding:6px 7px}}
+    </style>
+</head>
+<body>
+    <aside id="palette">
+        <h1 class="brand"><span class="brand-icon">V</span>VeloOS Studio</h1>
+        <p class="sub">Bausteine anklicken oder auf die Seite ziehen. Texte bearbeitest du direkt in der Vorschau.</p>
+        <div class="section-label">Seitenstruktur</div>
+        <div class="component-grid">
+            <button class="element-item" draggable="true" data-type="nav"><span class="icon">▤</span>Navigation</button>
+            <button class="element-item" draggable="true" data-type="hero"><span class="icon">✦</span>Hero-Bereich</button>
+            <button class="element-item" draggable="true" data-type="section"><span class="icon">▱</span>Sektion</button>
+            <button class="element-item" draggable="true" data-type="footer"><span class="icon">▱</span>Footer</button>
+        </div>
+        <div class="section-label">Inhalte</div>
+        <div class="component-grid">
+            <button class="element-item" draggable="true" data-type="heading"><span class="icon">H</span>Überschrift</button>
+            <button class="element-item" draggable="true" data-type="text"><span class="icon">≡</span>Textabsatz</button>
+            <button class="element-item" draggable="true" data-type="button"><span class="icon">↗</span>Aktionsbutton</button>
+            <button class="element-item" draggable="true" data-type="image"><span class="icon">▧</span>Bild</button>
+            <button class="element-item" draggable="true" data-type="video"><span class="icon">▷</span>Video</button>
+            <button class="element-item" draggable="true" data-type="list"><span class="icon">☷</span>Liste</button>
+            <button class="element-item" draggable="true" data-type="card"><span class="icon">▣</span>Karte</button>
+            <button class="element-item" draggable="true" data-type="columns"><span class="icon">◫</span>Zwei Spalten</button>
+            <button class="element-item" draggable="true" data-type="quote"><span class="icon">❞</span>Zitat</button>
+            <button class="element-item" draggable="true" data-type="form"><span class="icon">▤</span>Formular</button>
+            <button class="element-item" draggable="true" data-type="pricing"><span class="icon">€</span>Preistabelle</button>
+            <button class="element-item" draggable="true" data-type="testimonial"><span class="icon">❞</span>Kundenstimme</button>
+            <button class="element-item" draggable="true" data-type="faq"><span class="icon">?</span>FAQ</button>
+            <button class="element-item" draggable="true" data-type="stats"><span class="icon">↗</span>Kennzahlen</button>
+            <button class="element-item" draggable="true" data-type="gallery"><span class="icon">▧</span>Bildergalerie</button>
+            <button class="element-item" draggable="true" data-type="callout"><span class="icon">✦</span>Hinweisbox</button>
+            <button class="element-item" draggable="true" data-type="logos"><span class="icon">◈</span>Logo-Reihe</button>
+            <button class="element-item" draggable="true" data-type="badge"><span class="icon">●</span>Label</button>
+            <button class="element-item" draggable="true" data-type="divider"><span class="icon">—</span>Trennlinie</button>
+            <button class="element-item" draggable="true" data-type="spacer"><span class="icon">↕</span>Abstand</button>
+        </div>
+        <div class="section-label">Projekt</div>
+        <p class="sub">Dein Entwurf wird automatisch auf diesem Gerät gespeichert.</p>
+        <button class="tool-button" style="width:100%" onclick="document.getElementById('projectInput').click()">Projektdatei importieren</button>
+        <input id="projectInput" type="file" accept=".json,application/json">
+    </aside>
+    <main id="workspace">
+        <div class="toolbar">
+            <button class="tool-button" id="undoButton" title="Rückgängig">↶</button>
+            <button class="tool-button" id="redoButton" title="Wiederholen">↷</button>
+            <span class="toolbar-divider"></span>
+            <button class="tool-button" onclick="downloadProject()">Speichern</button>
+            <button class="tool-button" onclick="document.getElementById('projectInput').click()">Öffnen</button>
+            <input class="title-field" id="siteTitle" aria-label="Webseitentitel" title="Webseitentitel" value="Meine Webseite">
+            <span class="toolbar-spacer"></span><span id="saveStatus">Bereit</span>
+            <span class="toolbar-divider"></span>
+            <select class="select-control" id="viewportSize" onchange="changeViewport()" title="Vorschaugröße">
+                <option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="mobile">Mobil</option>
+            </select>
+            <button class="tool-button" id="previewButton" onclick="togglePreview()">Vorschau</button>
+            <button class="tool-button primary" onclick="exportHTML()">HTML exportieren</button>
+        </div>
+        <div id="preview"><div id="canvas" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="drop-hint" id="placeholder-text"><strong>Deine Seite beginnt hier</strong>Wähle links einen Baustein oder ziehe ihn auf die Arbeitsfläche.</div>
+        </div></div>
+    </main>
+    <aside class="inspector">
+        <h2 class="brand" style="font-size:14px">Eigenschaften</h2>
+        <p class="sub">Wähle einen Baustein, um Inhalt und Verhalten anzupassen.</p>
+        <div id="inspectorContent"><div class="inspector-empty">Noch kein Baustein ausgewählt.<br><br>Aktionsbuttons können Webseiten öffnen, E-Mails verfassen, Telefonnummern anrufen oder zu einer Sektion springen.</div></div>
+    </aside>
+    <input id="imageInput" type="file" accept="image/*">
+    <script>
+        const canvas=document.getElementById("canvas"),inspector=document.getElementById("inspectorContent");
+        const blockMarkup={
+            nav:'<nav class="studio-nav"><strong class="editable" contenteditable="true">Deine Marke</strong><div class="nav-links"><a class="editable" contenteditable="true" href="#leistungen">Leistungen</a><a class="editable" contenteditable="true" href="#ueber-uns">Über uns</a><a class="editable" contenteditable="true" href="#kontakt">Kontakt</a></div></nav>',
+            hero:'<section class="hero" id="start"><span class="studio-badge editable" contenteditable="true">Willkommen</span><h1 class="editable" contenteditable="true">Deine Idee verdient einen starken Auftritt.</h1><p class="editable" contenteditable="true">Beschreibe kurz, was dein Angebot besonders macht.</p><a class="cta" href="https://example.com" data-action="url" data-value="https://example.com"><span class="editable" contenteditable="true">Mehr erfahren</span><span>→</span></a></section>',
+            section:'<section class="studio-section" id="sektion"><h2 class="editable" contenteditable="true">Ein neuer Abschnitt</h2><p class="editable" contenteditable="true">Ergänze hier weitere Informationen zu deinem Angebot.</p></section>',
+            footer:'<footer class="studio-footer" id="kontakt"><strong class="editable" contenteditable="true">Dein Unternehmen</strong><p class="editable" contenteditable="true">© 2026 · Alle Rechte vorbehalten</p></footer>',
+            heading:'<h2 class="editable" contenteditable="true">Deine Überschrift</h2>',
+            text:'<p class="editable" contenteditable="true">Klicke hier, um deinen Text zu bearbeiten. Erkläre kurz und verständlich, worum es geht.</p>',
+            button:'<a class="cta" href="https://example.com" data-action="url" data-value="https://example.com"><span class="editable" contenteditable="true">Jetzt starten</span><span>→</span></a>',
+            image:'<div class="image-placeholder">▧<br>Bild auswählen</div>',
+            video:'<div class="image-placeholder">▶<br>YouTube-Adresse im Eigenschaftenbereich setzen</div>',
+            list:'<ul class="studio-list"><li class="editable" contenteditable="true">Ein wichtiger Vorteil</li><li class="editable" contenteditable="true">Ein weiterer Pluspunkt</li><li class="editable" contenteditable="true">Das macht dein Angebot besonders</li></ul>',
+            card:'<article class="studio-card"><span class="studio-badge editable" contenteditable="true">Vorteil</span><h3 class="editable" contenteditable="true">Ein überzeugender Titel</h3><p class="editable" contenteditable="true">Beschreibe den Nutzen für deine Besucher.</p><a href="https://example.com" data-action="url" data-value="https://example.com" class="editable" contenteditable="true">Mehr erfahren →</a></article>',
+            columns:'<div class="studio-columns"><section><h3 class="editable" contenteditable="true">Erste Spalte</h3><p class="editable" contenteditable="true">Dein Inhalt auf der linken Seite.</p></section><section><h3 class="editable" contenteditable="true">Zweite Spalte</h3><p class="editable" contenteditable="true">Dein Inhalt auf der rechten Seite.</p></section></div>',
+            quote:'<blockquote class="studio-quote"><p class="editable" contenteditable="true">„Ein passendes Kunden-Zitat macht dein Angebot greifbar.“</p><cite class="editable" contenteditable="true">— Name, Kundin oder Kunde</cite></blockquote>',
+            form:'<form class="studio-form" data-email="kontakt@example.com"><h3 class="editable" contenteditable="true">Schreib uns</h3><input name="name" placeholder="Dein Name"><input name="email" type="email" placeholder="Deine E-Mail-Adresse"><textarea name="message" placeholder="Deine Nachricht"></textarea><button type="submit" class="cta">Nachricht senden</button></form>',
+            pricing:'<section><h2 class="editable" contenteditable="true">Einfache, transparente Preise</h2><div class="studio-pricing"><article class="studio-price"><h3 class="editable" contenteditable="true">Basis</h3><strong class="editable" contenteditable="true">19 €</strong><p class="editable" contenteditable="true">pro Monat</p><ul><li class="editable" contenteditable="true">Für den Einstieg</li><li class="editable" contenteditable="true">Support inklusive</li></ul><a class="cta" href="mailto:kontakt@example.com" data-action="email" data-value="kontakt@example.com"><span class="editable" contenteditable="true">Auswählen</span></a></article><article class="studio-price"><h3 class="editable" contenteditable="true">Pro</h3><strong class="editable" contenteditable="true">49 €</strong><p class="editable" contenteditable="true">pro Monat</p><ul><li class="editable" contenteditable="true">Alle Funktionen</li><li class="editable" contenteditable="true">Priorisierter Support</li></ul><a class="cta" href="mailto:kontakt@example.com" data-action="email" data-value="kontakt@example.com"><span class="editable" contenteditable="true">Auswählen</span></a></article><article class="studio-price"><h3 class="editable" contenteditable="true">Team</h3><strong class="editable" contenteditable="true">99 €</strong><p class="editable" contenteditable="true">pro Monat</p><ul><li class="editable" contenteditable="true">Für wachsende Teams</li><li class="editable" contenteditable="true">Persönliche Beratung</li></ul><a class="cta" href="mailto:kontakt@example.com" data-action="email" data-value="kontakt@example.com"><span class="editable" contenteditable="true">Auswählen</span></a></article></div></section>',
+            testimonial:'<blockquote class="studio-testimonial"><p class="editable" contenteditable="true">„Der Service hat unseren Alltag deutlich einfacher gemacht.“</p><strong class="editable" contenteditable="true">Alex Beispiel</strong><span class="editable" contenteditable="true"> · Kundin oder Kunde</span></blockquote>',
+            faq:'<section class="studio-faq" id="fragen"><h2 class="editable" contenteditable="true">Häufige Fragen</h2><details open><summary class="editable" contenteditable="true">Wie funktioniert das Angebot?</summary><p class="editable" contenteditable="true">Hier steht eine kurze, hilfreiche Antwort.</p></details><details><summary class="editable" contenteditable="true">Kann ich jederzeit kündigen?</summary><p class="editable" contenteditable="true">Ergänze hier deine Bedingungen.</p></details><details><summary class="editable" contenteditable="true">Wie erreiche ich den Support?</summary><p class="editable" contenteditable="true">Beschreibe hier deine Kontaktmöglichkeiten.</p></details></section>',
+            stats:'<div class="studio-stats"><div class="studio-stat"><strong class="editable" contenteditable="true">98 %</strong><span class="editable" contenteditable="true">Zufriedenheit</span></div><div class="studio-stat"><strong class="editable" contenteditable="true">1.200+</strong><span class="editable" contenteditable="true">Kundinnen und Kunden</span></div><div class="studio-stat"><strong class="editable" contenteditable="true">24/7</strong><span class="editable" contenteditable="true">Für dich da</span></div></div>',
+            gallery:'<div class="studio-gallery"><div class="image-placeholder">▧<br>Bild 1 auswählen</div><div class="image-placeholder">▧<br>Bild 2 auswählen</div><div class="image-placeholder">▧<br>Bild 3 auswählen</div></div>',
+            callout:'<aside class="studio-callout"><strong class="editable" contenteditable="true">Gut zu wissen</strong><p class="editable" contenteditable="true">Hebe hier einen wichtigen Hinweis, ein Angebot oder einen nächsten Schritt hervor.</p><a class="editable" contenteditable="true" href="mailto:kontakt@example.com" data-action="email" data-value="kontakt@example.com">Kontakt aufnehmen →</a></aside>',
+            logos:'<div class="studio-logos"><span class="editable" contenteditable="true">ACME</span><span class="editable" contenteditable="true">Nord</span><span class="editable" contenteditable="true">Studio 8</span><span class="editable" contenteditable="true">Partner</span></div>',
+            badge:'<span class="studio-badge editable" contenteditable="true">Neu · Dein Label</span>',
+            divider:'<hr class="studio-divider">',
+            spacer:'<div class="studio-spacer" aria-label="Abstand"></div>'
+        };
+        const labels={nav:"Navigation",hero:"Hero-Bereich",section:"Sektion",footer:"Footer",heading:"Überschrift",text:"Textabsatz",button:"Aktionsbutton",image:"Bild",video:"Video",list:"Liste",card:"Karte",columns:"Zwei Spalten",quote:"Zitat",form:"Kontaktformular",pricing:"Preistabelle",testimonial:"Kundenstimme",faq:"FAQ",stats:"Kennzahlen",gallery:"Bildergalerie",callout:"Hinweisbox",logos:"Logo-Reihe",badge:"Label",divider:"Trennlinie",spacer:"Abstand"};
+        const MAX_PROJECT_CHARS=512*1024,MAX_HISTORY_ENTRIES=5,MAX_HISTORY_CHARS=MAX_PROJECT_CHARS,MAX_BLOCKS=60,MAX_IMAGE_INPUT_BYTES=8*1024*1024,MAX_IMAGE_OUTPUT_BYTES=256*1024;
+        let selectedBlock=null,draggedBlock=null,selectedImageSlot=null,history=[canvas.innerHTML],historyIndex=0,saveTimer,editTimer,projectDbPromise=null,userModified=false;
+        function status(text){document.getElementById("saveStatus").textContent=text;}
+        function scheduleSave(){clearTimeout(saveTimer);status("Änderungen…");saveTimer=setTimeout(()=>persistProject(),900);}
+        function rememberSnapshot(html){
+            if(history[historyIndex]===html)return;
+            history.splice(historyIndex+1);history.push(html);
+            let total=history.reduce((size,item)=>size+item.length,0);
+            while(history.length>1&&(history.length>MAX_HISTORY_ENTRIES||total>MAX_HISTORY_CHARS)){
+                total-=history.shift().length;
+            }
+            historyIndex=history.length-1;updateHistory();
+        }
+        function snapshot(){
+            userModified=true;
+            clearTimeout(editTimer);
+            const html=canvas.innerHTML;
+            if(html.length>MAX_PROJECT_CHARS){status("Projektlimit erreicht (512 KB). Entferne große Inhalte oder exportiere die Projektdatei.");return;}
+            rememberSnapshot(html);
+            scheduleSave();
+        }
+        function flushPendingEdit(){
+            if(!editTimer)return;
+            clearTimeout(editTimer);editTimer=null;
+            rememberSnapshot(canvas.innerHTML);scheduleSave();
+        }
+        function scheduleEditSnapshot(){
+            userModified=true;
+            clearTimeout(editTimer);clearTimeout(saveTimer);status("Änderungen…");
+            editTimer=setTimeout(()=>{const html=canvas.innerHTML;if(html.length<=MAX_PROJECT_CHARS)rememberSnapshot(html);else status("Projektlimit erreicht (512 KB)");scheduleSave();},1000);
+        }
+        function openProjectDatabase(){
+            if(projectDbPromise)return projectDbPromise;
+            projectDbPromise=new Promise((resolve,reject)=>{
+                if(!window.indexedDB){reject(new Error("IndexedDB ist nicht verfügbar"));return;}
+                const request=indexedDB.open("velos-studio-projects-v2",1);
+                request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("projects"))request.result.createObjectStore("projects");};
+                request.onsuccess=()=>resolve(request.result);
+                request.onerror=()=>reject(request.error||new Error("Projekt-Datenbank konnte nicht geöffnet werden"));
+                request.onblocked=()=>reject(new Error("Projekt-Datenbank ist durch ein anderes Fenster blockiert"));
+            });
+            return projectDbPromise;
+        }
+        function readAutosave(){
+            return openProjectDatabase().then(db=>new Promise((resolve,reject)=>{
+                const request=db.transaction("projects","readonly").objectStore("projects").get("autosave");
+                request.onsuccess=()=>resolve(request.result||null);
+                request.onerror=()=>reject(request.error||new Error("Automatisches Projekt konnte nicht gelesen werden"));
+            }));
+        }
+        async function persistProject(){
+            const html=canvas.innerHTML;
+            if(html.length>MAX_PROJECT_CHARS){status("Autospeichern pausiert: Projektlimit von 512 KB überschritten");return;}
+            const project={html,viewport:document.getElementById("viewportSize").value,title:document.getElementById("siteTitle").value,updatedAt:Date.now()};
+            try{
+                const db=await openProjectDatabase();
+                await new Promise((resolve,reject)=>{
+                    const transaction=db.transaction("projects","readwrite");
+                    transaction.objectStore("projects").put(project,"autosave");
+                    transaction.oncomplete=resolve;
+                    transaction.onerror=()=>reject(transaction.error||new Error("Speichern fehlgeschlagen"));
+                    transaction.onabort=()=>reject(transaction.error||new Error("Speichern wurde abgebrochen"));
+                });
+                status("Automatisch gespeichert");
+            }catch(error){
+                const legacyLimit=64*1024;
+                if(project.html.length<=legacyLimit){
+                    try{localStorage.setItem("velos-studio-project-fallback-v2",JSON.stringify(project));status("Automatisch gespeichert");return;}
+                    catch(storageError){console.warn("VeloOS Studio: lokales Speichern fehlgeschlagen",storageError);}
+                }
+                console.warn("VeloOS Studio: Autospeichern nicht verfügbar",error);
+                status("Autospeichern nicht möglich – bitte Projektdatei speichern");
+            }
+        }
+        function restoreProject(project){
+            if(!project||typeof project.html!=="string"||project.html.length>MAX_PROJECT_CHARS)return false;
+            if((project.html.match(/class="[^"]*\bblock\b/g)||[]).length>MAX_BLOCKS)return false;
+            canvas.innerHTML=project.html;
+            if(project.viewport)document.getElementById("viewportSize").value=project.viewport;
+            if(typeof project.title==="string")document.getElementById("siteTitle").value=project.title.slice(0,120);
+            selectedBlock=null;bindBlocks();renderInspector();applyViewport();
+            history=[canvas.innerHTML];historyIndex=0;updateHistory();
+            return true;
+        }
+        async function imageDimensions(file){
+            const bytes=new Uint8Array(await file.slice(0,1024*1024).arrayBuffer());
+            const ascii=(offset,length)=>String.fromCharCode(...bytes.subarray(offset,offset+length));
+            let width=0,height=0;
+            if(bytes.length>=24&&ascii(0,8)==="\x89PNG\r\n\x1a\n"){
+                const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+                width=view.getUint32(16);height=view.getUint32(20);
+            }else             if(bytes.length>=30&&ascii(0,4)==="RIFF"&&ascii(8,4)==="WEBP"){
+                const chunk=ascii(12,4);
+                if(chunk==="VP8X"){
+                    width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);
+                    height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);
+                }else if(chunk==="VP8L"&&bytes[20]===0x2f){
+                    width=1+(((bytes[22]&0x3f)<<8)|bytes[21]);
+                    height=1+(((bytes[24]&0x0f)<<10)|(bytes[23]<<2)|((bytes[22]&0xc0)>>6));
+                }else if(chunk==="VP8 "&&bytes[23]===0x9d&&bytes[24]===0x01&&bytes[25]===0x2a){
+                    width=((bytes[27]&0x3f)<<8)|bytes[26];
+                    height=((bytes[29]&0x3f)<<8)|bytes[28];
+                }
+            }else if(bytes.length>=10&&(ascii(0,6)==="GIF87a"||ascii(0,6)==="GIF89a")){
+                width=bytes[6]|(bytes[7]<<8);height=bytes[8]|(bytes[9]<<8);
+            }else if(bytes.length>=4&&bytes[0]===0xff&&bytes[1]===0xd8){
+                let offset=2;
+                while(offset+4<bytes.length){
+                    if(bytes[offset++]!==0xff)continue;
+                    let marker=bytes[offset++];
+                    while(marker===0xff&&offset<bytes.length)marker=bytes[offset++];
+                    if(marker===0xd9||marker===0xda)break;
+                    if(marker===0x01||(marker>=0xd0&&marker<=0xd7))continue;
+                    const length=(bytes[offset]<<8)|bytes[offset+1];
+                    if(length<2||offset+length>bytes.length)break;
+                    if([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)){
+                        height=(bytes[offset+3]<<8)|bytes[offset+4];
+                        width=(bytes[offset+5]<<8)|bytes[offset+6];
+                        break;
+                    }
+                    offset+=length;
+                }
+            }
+            if(!width||!height||width>12000||height>12000||width*height>16*1024*1024){
+                throw new Error("Bildformat oder Bildgröße wird nicht unterstützt (maximal 16 Megapixel)");
+            }
+            return {width,height};
+        }
+        async function restoreAutosave(){
+            try{
+                const project=await readAutosave();
+                if(!userModified&&project&&restoreProject(project)){status("Autosicherung wiederhergestellt");return;}
+            }catch(error){console.warn("VeloOS Studio: Autosicherung konnte nicht geladen werden",error);}
+            try{
+                const fallback=localStorage.getItem("velos-studio-project-fallback-v2");
+                if(!userModified&&fallback&&restoreProject(JSON.parse(fallback))){status("Autosicherung wiederhergestellt");return;}
+            }catch(error){console.warn("VeloOS Studio: lokale Autosicherung konnte nicht geladen werden",error);}
+            status("Bereit");
+        }
+        function updateHistory(){document.getElementById("undoButton").disabled=historyIndex<=0;document.getElementById("redoButton").disabled=historyIndex>=history.length-1;}
+        function bindBlock(block){
+            block.addEventListener("click",event=>{if(event.target.closest(".remove,.image-placeholder"))return;if(event.target.closest("a")){if(document.body.classList.contains("preview-mode"))return;event.preventDefault();}selectBlock(block);});
+            block.addEventListener("dragstart",event=>{draggedBlock=block;block.classList.add("dragging");event.dataTransfer.setData("text/plain","move");event.dataTransfer.effectAllowed="move";});
+            block.addEventListener("dragend",()=>{block.classList.remove("dragging");draggedBlock=null;});
+            block.querySelectorAll(".image-placeholder").forEach(placeholder=>placeholder.addEventListener("click",()=>{
+                selectBlock(block);selectedImageSlot=placeholder;document.getElementById("imageInput").click();
+            }));
+            block.querySelector(".remove")?.addEventListener("click",event=>{event.stopPropagation();removeBlock(block);});
+        }
+        function bindBlocks(){canvas.querySelectorAll(".block").forEach(bindBlock);}
+        function selectBlock(block){selectedBlock=block;selectedImageSlot=null;canvas.querySelectorAll(".block").forEach(node=>node.classList.toggle("selected",node===block));renderInspector();}
+        function addBlock(type,before=null){
+            if(!blockMarkup[type])return;document.getElementById("placeholder-text")?.remove();
+            if(canvas.querySelectorAll(".block").length>=MAX_BLOCKS){status("Maximal 60 Bausteine pro Seite");return;}
+            const block=document.createElement("div");block.className="block";block.dataset.type=type;block.draggable=true;block.innerHTML=blockMarkup[type];
+            const remove=document.createElement("button");remove.className="remove";remove.type="button";remove.textContent="×";remove.title="Baustein entfernen";block.appendChild(remove);
+            if(before&&before.parentElement===canvas)canvas.insertBefore(block,before);else canvas.appendChild(block);
+            bindBlock(block);selectBlock(block);snapshot();
+        }
+        function duplicateBlock(block){
+            if(!block||!block.isConnected)return;
+            if(canvas.querySelectorAll(".block").length>=MAX_BLOCKS){status("Maximal 60 Bausteine pro Seite");return;}
+            const copy=block.cloneNode(true);
+            copy.querySelectorAll("[id]").forEach(node=>node.removeAttribute("id"));
+            copy.classList.remove("selected","dragging");
+            block.after(copy);bindBlock(copy);selectBlock(copy);snapshot();
+        }
+        function ensurePlaceholder(){if(!canvas.querySelector(".block"))canvas.innerHTML='<div class="drop-hint" id="placeholder-text"><strong>Deine Seite beginnt hier</strong>Wähle links einen Baustein oder ziehe ihn auf die Arbeitsfläche.</div>';}
+        function removeBlock(block){if(!block)return;block.remove();selectedBlock=null;ensurePlaceholder();renderInspector();snapshot();}
+        function esc(value){return String(value||"").replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+        function colorValue(value,fallback){const parts=String(value).match(/[\d.]+/g);if(!parts||parts.length<3||Number(parts[3])===0)return fallback;return "#"+parts.slice(0,3).map(part=>Math.max(0,Math.min(255,Number(part)||0)).toString(16).padStart(2,"0")).join("");}
+        function field(label,id,value,help=""){return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" value="'+esc(value)+'">'+(help?'<span class="field-help">'+help+'</span>':"")+'</div>';}
+        function renderInspector(){
+            if(!selectedBlock||!selectedBlock.isConnected){inspector.innerHTML='<div class="inspector-empty">Noch kein Baustein ausgewählt.<br><br>Aktionsbuttons können Webseiten öffnen, E-Mails verfassen, Telefonnummern anrufen oder zu einer Sektion springen.</div>';return;}
+            const type=selectedBlock.dataset.type,editable=selectedBlock.querySelector("[contenteditable]"),link=selectedBlock.querySelector("a[data-action]");
+            let html='<div class="field"><label>Baustein</label><input readonly value="'+esc(labels[type]||type)+'"></div>';
+            if(link){html+='<div class="field"><label for="actionType">Aktion beim Anklicken</label><select id="actionType"><option value="url">Webseite öffnen</option><option value="email">E-Mail schreiben</option><option value="phone">Telefonnummer anrufen</option><option value="section">Zu einer Sektion springen</option></select></div>'+field("Ziel / Adresse","actionValue",link.dataset.value||link.getAttribute("href"),"URL, E-Mail, Telefonnummer oder #anker-id")+'<div class="field"><label><input type="checkbox" id="openNewTab" style="width:auto;min-height:auto" '+(link.target==="_blank"?"checked":"")+'> In neuem Tab öffnen</label></div>';}
+            else if(editable)html+=field("Inhalt","contentValue",editable.textContent);
+            if(["section","hero","nav","footer"].includes(type))html+=field("Anker-ID","blockId",selectedBlock.querySelector("[id]")?.id||"");
+            if(type==="image")html+='<div class="field"><button type="button" id="chooseImage">Bild vom Gerät auswählen</button><span class="field-help">Das Bild wird in die exportierte Seite eingebettet.</span></div>';
+            if(type==="video")html+=field("YouTube-Adresse","videoUrl",selectedBlock.dataset.videoUrl||"");
+            if(type==="form")html+=field("Empfängeradresse","formEmail",selectedBlock.querySelector("form")?.dataset.email||"kontakt@example.com","Im HTML-Export wird das E-Mail-Programm der Besucherin oder des Besuchers geöffnet.");
+            html+='<div class="section-label">Stil</div><div class="field"><label for="blockBackground">Hintergrundfarbe</label><input id="blockBackground" type="color" value="#f8fafc"></div><div class="field"><label for="blockForeground">Textfarbe</label><input id="blockForeground" type="color" value="#263248"></div><div class="field"><label for="blockRadius">Ecken (px)</label><input id="blockRadius" type="number" min="0" max="48" value="12"></div>';
+            html+='<button type="button" id="duplicateBlock">Baustein duplizieren</button><button type="button" id="deleteBlock" style="margin-top:4px;color:#fecaca">Baustein entfernen</button>';inspector.innerHTML=html;
+            document.getElementById("contentValue")?.addEventListener("input",event=>{if(editable)editable.textContent=event.target.value;scheduleEditSnapshot();});
+            document.getElementById("blockId")?.addEventListener("input",event=>{const node=selectedBlock.querySelector("[id]")||selectedBlock;node.id=event.target.value.replace(/[^a-zA-Z0-9_-]/g,"-");scheduleEditSnapshot();});
+            document.getElementById("chooseImage")?.addEventListener("click",()=>document.getElementById("imageInput").click());
+            document.getElementById("videoUrl")?.addEventListener("change",event=>setVideo(event.target.value));
+            document.getElementById("formEmail")?.addEventListener("change",event=>{
+                const email=event.target.value.trim();
+                if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status("Bitte eine gültige Empfängeradresse eingeben");return;}
+                selectedBlock.querySelector("form").dataset.email=email;snapshot();
+            });
+            document.getElementById("blockBackground").addEventListener("input",event=>{selectedBlock.style.backgroundColor=event.target.value;snapshot();});
+            document.getElementById("blockForeground").addEventListener("input",event=>{selectedBlock.style.color=event.target.value;snapshot();});
+            document.getElementById("blockRadius").addEventListener("change",event=>{selectedBlock.style.borderRadius=Math.max(0,Math.min(48,Number(event.target.value)||0))+"px";snapshot();});
+            document.getElementById("blockBackground").value=colorValue(getComputedStyle(selectedBlock).backgroundColor,"#f8fafc");
+            document.getElementById("blockForeground").value=colorValue(getComputedStyle(selectedBlock).color,"#263248");
+            document.getElementById("blockRadius").value=Math.min(48,parseInt(getComputedStyle(selectedBlock).borderRadius,10)||0);
+            document.getElementById("duplicateBlock")?.addEventListener("click",()=>duplicateBlock(selectedBlock));
+            document.getElementById("deleteBlock")?.addEventListener("click",()=>removeBlock(selectedBlock));
+            if(link){const action=document.getElementById("actionType"),value=document.getElementById("actionValue");action.value=link.dataset.action||inferAction(link.href);action.addEventListener("change",()=>{value.value=action.value==="email"?"name@example.com":action.value==="phone"?"+49":action.value==="section"?"#sektion":"https://example.com";applyLink(link);});value.addEventListener("change",()=>applyLink(link));document.getElementById("openNewTab").addEventListener("change",event=>{if(event.target.checked){link.target="_blank";link.rel="noopener noreferrer";}else{link.removeAttribute("target");link.removeAttribute("rel");}snapshot();});}
+        }
+        function inferAction(href){return href.startsWith("mailto:")?"email":href.startsWith("tel:")?"phone":href.startsWith("#")?"section":"url";}
+        function applyLink(link){const action=document.getElementById("actionType").value,value=document.getElementById("actionValue").value.trim();link.dataset.action=action;link.dataset.value=value;link.href=action==="email"?"mailto:"+value.replace(/^mailto:/,""):action==="phone"?"tel:"+value.replace(/^tel:/,""):action==="section"?(value.startsWith("#")?value:"#"+value):(/^https?:\/\//i.test(value)?value:"https://"+value);snapshot();}
+        function setVideo(value){if(!selectedBlock)return;let url;try{url=new URL(value);}catch(_){status("Ungültige Video-Adresse");return;}if(!url.hostname.endsWith("youtube.com")&&!url.hostname.endsWith("youtu.be")){status("Bitte eine YouTube-Adresse verwenden");return;}const id=url.hostname.endsWith("youtu.be")?url.pathname.slice(1):url.searchParams.get("v");if(!id){status("Die YouTube-Adresse enthält keine Video-ID");return;}selectedBlock.dataset.videoUrl=value;const frame='<iframe src="https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'" title="YouTube-Video" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px"></iframe>',placeholder=selectedBlock.querySelector(".image-placeholder"),existing=selectedBlock.querySelector("iframe");if(placeholder)placeholder.outerHTML=frame;else if(existing)existing.outerHTML=frame;snapshot();}
+        function allowDrop(event){event.preventDefault();event.dataTransfer.dropEffect=draggedBlock?"move":"copy";}
+        function drop(event){event.preventDefault();const target=event.target.closest(".block");if(draggedBlock){if(target&&target!==draggedBlock){const rect=target.getBoundingClientRect();canvas.insertBefore(draggedBlock,event.clientY<rect.top+rect.height/2?target:target.nextSibling);snapshot();}return;}const type=event.dataTransfer.getData("text/plain");if(blockMarkup[type])addBlock(type,target||null);}
+        document.querySelectorAll(".element-item").forEach(item=>{item.addEventListener("click",()=>addBlock(item.dataset.type));item.addEventListener("dragstart",event=>{draggedBlock=null;event.dataTransfer.setData("text/plain",item.dataset.type);event.dataTransfer.effectAllowed="copy";});});
+        canvas.addEventListener("beforeinput",event=>{
+            const editable=event.target.closest("[contenteditable]");
+            if(!editable)return;
+            const added=event.data?.length||0;
+            if(editable.textContent.length+added>20000){event.preventDefault();status("Maximal 20000 Zeichen pro Textfeld");}
+        });
+        canvas.addEventListener("paste",event=>{
+            if(!event.target.closest("[contenteditable]"))return;
+            const pasted=event.clipboardData?.getData("text/plain")||"";
+            if(pasted.length>20000){event.preventDefault();status("Einfügen auf 20000 Zeichen pro Textfeld begrenzt");}
+        });
+        canvas.addEventListener("input",event=>{if(event.target.closest("[contenteditable]"))scheduleEditSnapshot();});
+        canvas.addEventListener("submit",event=>{
+            const form=event.target.closest("form.studio-form");
+            if(!form)return;
+            event.preventDefault();
+            if(!document.body.classList.contains("preview-mode")){status("Zum Testen des Formulars zuerst die Vorschau öffnen");return;}
+            const data=new FormData(form),subject=encodeURIComponent("Nachricht über die Webseite");
+            const body=encodeURIComponent("Name: "+(data.get("name")||"")+"\nE-Mail: "+(data.get("email")||"")+"\n\n"+(data.get("message")||""));
+            window.location.href="mailto:"+encodeURIComponent(form.dataset.email||"")+"?subject="+subject+"&body="+body;
+        });
+        document.getElementById("imageInput").addEventListener("change",async event=>{
+            const file=event.target.files[0],target=selectedBlock;
+            let placeholder=selectedImageSlot||target?.querySelector(".image-placeholder");
+            selectedImageSlot=null;
+            event.target.value="";
+            if(!file||!target)return;
+            if(!file.type.startsWith("image/")){status("Die ausgewählte Datei ist kein Bild");return;}
+            if(file.size>MAX_IMAGE_INPUT_BYTES){status("Bild zu groß (maximal 8 MB vor der Optimierung)");return;}
+            status("Bild wird für den Editor optimiert…");
+            try{
+                const dimensions=await imageDimensions(file);
+                const scale=Math.min(1,1280/Math.max(dimensions.width,dimensions.height));
+                const targetWidth=Math.max(1,Math.round(dimensions.width*scale));
+                const targetHeight=Math.max(1,Math.round(dimensions.height*scale));
+                const bitmap=await createImageBitmap(file,{resizeWidth:targetWidth,resizeHeight:targetHeight,resizeQuality:"low"});
+                const imageCanvas=document.createElement("canvas");
+                imageCanvas.width=bitmap.width;
+                imageCanvas.height=bitmap.height;
+                const context=imageCanvas.getContext("2d");
+                if(!context)throw new Error("Bildverarbeitung konnte nicht gestartet werden");
+                context.drawImage(bitmap,0,0,imageCanvas.width,imageCanvas.height);bitmap.close();
+                const blob=await new Promise((resolve,reject)=>imageCanvas.toBlob(result=>result?resolve(result):reject(new Error("Bild konnte nicht komprimiert werden")),"image/webp",0.82));
+                if(blob.size>MAX_IMAGE_OUTPUT_BYTES)throw new Error("Das optimierte Bild ist noch zu groß (maximal 256 KB)");
+                const reader=new FileReader();
+                const dataUrl=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error||new Error("Bild konnte nicht gelesen werden"));reader.readAsDataURL(blob);});
+                if(!target.isConnected)return;
+                const image=document.createElement("img");
+                image.src=dataUrl;image.alt="Eingefügtes Bild";image.style.cssText="display:block;width:100%;height:auto;border-radius:10px";
+                if(placeholder&&placeholder.isConnected)placeholder.replaceWith(image);
+                else {
+                    const existing=target.querySelector("img");
+                    if(!existing){status("Für dieses Element ist keine Bildfläche vorhanden");return;}
+                    existing.replaceWith(image);
+                }
+                snapshot();
+            }catch(error){console.warn("VeloOS Studio: Bildimport fehlgeschlagen",error);status(error.message||"Bild konnte nicht verarbeitet werden");}
+        });
+        document.getElementById("projectInput").addEventListener("change",event=>{const file=event.target.files[0];event.target.value="";if(!file)return;if(file.size>1024*1024){status("Projektdatei zu groß (maximal 1 MB)");return;}const reader=new FileReader();reader.onload=()=>{try{const project=JSON.parse(reader.result);if(!restoreProject(project)){status("Projektdatei ist ungültig oder überschreitet 512 KB");return;}userModified=true;scheduleSave();status("Projekt geöffnet");}catch(_){status("Projektdatei ist ungültig");}};reader.onerror=()=>status("Projektdatei konnte nicht gelesen werden");reader.readAsText(file);});
+        function applyViewport(){const sizes={desktop:"860px",tablet:"640px",mobile:"390px"};canvas.style.width=sizes[document.getElementById("viewportSize").value]||sizes.desktop;}
+        function changeViewport(){userModified=true;applyViewport();scheduleSave();}
+        function saveProject(){persistProject();}
+        function downloadProject(){const html=canvas.innerHTML;if(html.length>MAX_PROJECT_CHARS){status("Projektlimit erreicht (512 KB): bitte große Inhalte entfernen");return;}const blob=new Blob([JSON.stringify({version:1,html,viewport:document.getElementById("viewportSize").value,title:document.getElementById("siteTitle").value},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="velos-projekt.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);persistProject();}
+        function togglePreview(){const enabled=document.body.classList.toggle("preview-mode");document.getElementById("previewButton").textContent=enabled?"Editor":"Vorschau";canvas.querySelectorAll("[contenteditable]").forEach(node=>node.contentEditable=enabled?"false":"true");canvas.querySelectorAll(".remove").forEach(node=>node.hidden=enabled);canvas.querySelectorAll(".block").forEach(node=>node.classList.remove("selected"));selectedBlock=null;renderInspector();}
+        function exportHTML(){
+            const content=canvas.cloneNode(true);
+            content.querySelectorAll(".remove,.drop-hint").forEach(node=>node.remove());
+            content.querySelectorAll("[contenteditable]").forEach(node=>node.removeAttribute("contenteditable"));
+            content.querySelectorAll(".block").forEach(node=>{node.classList.remove("selected");node.removeAttribute("draggable");});
+            content.querySelectorAll("form").forEach(node=>node.removeAttribute("onsubmit"));
+            const css=`body{font:16px/1.7 system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:32px 24px;color:#263248}
+                h1,h2,h3{line-height:1.2}.cta{display:inline-flex;gap:8px;padding:12px 20px;border-radius:8px;background:#2563eb;color:white;text-decoration:none;font-weight:650}
+                .studio-nav{display:flex;justify-content:space-between;padding:12px 18px;background:#f8fafc}.nav-links{display:flex;gap:18px}
+                .hero{padding:58px 34px;background:linear-gradient(135deg,#eaf2ff,#f5efff);border-radius:14px}
+                .studio-card,.studio-price{padding:24px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}
+                .studio-columns,.studio-pricing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+                .studio-section{padding:34px 24px;background:#f8fafc}.studio-footer{padding:26px 20px;border-top:1px solid #e2e8f0;color:#64748b}
+                .studio-quote,.studio-testimonial{padding:22px 26px;border-left:4px solid #3b82f6;background:#f1f5f9}
+                .studio-badge{display:inline-block;padding:5px 10px;border-radius:99px;background:#dbeafe;color:#1d4ed8}
+                .studio-spacer{height:64px}.studio-form{display:grid;gap:10px}.studio-form input,.studio-form textarea{padding:11px;border:1px solid #cbd5e1;border-radius:7px}
+                .studio-divider{border:0;border-top:1px solid #cbd5e1}.studio-faq details{padding:16px 4px;border-bottom:1px solid #dbe3ef}
+                .studio-faq summary{cursor:pointer;font-weight:700}.studio-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;text-align:center}
+                .studio-stat{padding:18px;border-radius:12px;background:#eff6ff}.studio-stat strong{display:block;color:#1d4ed8;font-size:28px}
+                .studio-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.studio-gallery img{width:100%;height:auto;border-radius:10px}
+                .studio-callout{padding:24px;border-radius:12px;background:#ecfeff;border-left:4px solid #0891b2}
+                .studio-logos{display:flex;flex-wrap:wrap;justify-content:space-around;gap:20px;padding:20px;color:#64748b;font-size:18px;font-weight:750}
+                @media(max-width:700px){.studio-columns,.studio-pricing{grid-template-columns:1fr}.studio-stats,.studio-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.studio-nav{align-items:flex-start;gap:12px;flex-direction:column}.nav-links{flex-wrap:wrap;gap:10px}body{padding:16px}}`;
+            const title=esc(document.getElementById("siteTitle").value.trim().slice(0,120)||"Meine Webseite");
+            const page='<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>'+title+'</title><style>'+css+'</style></head><body>'+content.innerHTML+'<script>document.querySelectorAll(".studio-form").forEach(form=>form.addEventListener("submit",event=>{event.preventDefault();const data=new FormData(form),subject=encodeURIComponent("Nachricht über die Webseite"),body=encodeURIComponent("Name: "+(data.get("name")||"")+"\\nE-Mail: "+(data.get("email")||"")+"\\n\\n"+(data.get("message")||""));location.href="mailto:"+encodeURIComponent(form.dataset.email||"")+"?subject="+subject+"&body="+body;}));</'+'script></body></html>';
+            if(page.length>MAX_PROJECT_CHARS){status("HTML-Export zu groß: maximal 512 KB");return;}
+            const encoded=btoa(unescape(encodeURIComponent(page))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+            status("Export wird vorbereitet…");window.location.href="velos-export://save/"+encoded;
+        }
+        document.getElementById("undoButton").addEventListener("click",()=>{flushPendingEdit();if(historyIndex>0){historyIndex--;canvas.innerHTML=history[historyIndex];bindBlocks();selectedBlock=null;renderInspector();updateHistory();userModified=true;persistProject();}});
+        document.getElementById("redoButton").addEventListener("click",()=>{flushPendingEdit();if(historyIndex<history.length-1){historyIndex++;canvas.innerHTML=history[historyIndex];bindBlocks();selectedBlock=null;renderInspector();updateHistory();userModified=true;persistProject();}});
+        document.getElementById("siteTitle").addEventListener("input",()=>{userModified=true;scheduleSave();});
+        document.addEventListener("keydown",event=>{
+            const editing=event.target.isContentEditable||["INPUT","TEXTAREA","SELECT"].includes(event.target.tagName);
+            if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="z"){event.preventDefault();document.getElementById(event.shiftKey?"redoButton":"undoButton").click();}
+            else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="y"){event.preventDefault();document.getElementById("redoButton").click();}
+            else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="d"&&!editing&&selectedBlock){event.preventDefault();duplicateBlock(selectedBlock);}
+            else if(event.key==="Delete"&&selectedBlock&&!editing)removeBlock(selectedBlock);
+        });
+        bindBlocks();applyViewport();history=[canvas.innerHTML];historyIndex=0;updateHistory();restoreAutosave();
+    </script>
+</body>
+</html>

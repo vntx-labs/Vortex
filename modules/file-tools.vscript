@@ -1,0 +1,13 @@
+loop
+    call ui.list CHOICE RESPONSE "Dateiwerkzeuge" "Dateien gesammelt durchsuchen, anpassen und umwandeln." '["Öffnen:0","Zurück:1"]' '[["🔁  Regex-Massen-Ersetzen","Dateiinhalte oder Dateinamen anhand eines Musters ändern"],["🔄  Datei-Konverter","Bilder oder Videos umwandeln"],["←  Zurück","Zum Hauptmenü"]]'
+    if empty CHOICE
+        break
+    end
+    if equals CHOICE "🔁  Regex-Massen-Ersetzen"
+        call module.file_tools.replace
+    end
+    if equals CHOICE "🔄  Datei-Konverter"
+        call module.file_tools.convert
+    end
+end
+return 0

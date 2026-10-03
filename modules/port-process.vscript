@@ -1,0 +1,57 @@
+call ui.entry port "Port- & Prozessverwaltung" "TCP-Port prüfen (1–65535). Es wird kein fremder Prozess automatisch beendet:" "8080"
+if empty port
+    return 0
+end
+
+call process.validate_port "${port}"
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+call process.ensure_port_tool
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+call process.listener_pids pids "${port}"
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+if empty pids
+    call ui.info "Port frei" "Auf TCP-Port ${port} lauscht kein Prozess."
+    return 0
+end
+
+call ui.select_port_process selected "${port}" "${pids}"
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+if empty selected
+    return 0
+end
+
+call ui.confirm terminate_confirmed "Prozess beenden?" "PID ${selected} mit SIGTERM beenden?\nDas beendet ausschließlich den ausgewählten Prozess."
+if declined terminate_confirmed
+    return 0
+end
+call process.terminate_listener "${port}" "${selected}" terminate_confirmed
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+if declined listener_still_running
+    return 0
+end
+
+call ui.confirm force_kill "Prozess reagiert nicht" "PID ${selected} läuft noch. Soll ausschließlich dieser Prozess mit SIGKILL erzwungen beendet werden?"
+if declined force_kill
+    return 0
+end
+call process.kill_selected "${selected}" force_kill
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+return 0

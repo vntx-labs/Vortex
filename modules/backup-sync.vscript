@@ -1,0 +1,78 @@
+# Vortex workflow language: each call uses an allowlisted host or file/process action.
+call core.ensure_optional_tool rsync "rsync" "rsync"
+if failed last
+    return 1
+end
+
+call core.pick_path source directory "Quellordner sichern"
+if empty source
+    return 0
+end
+call core.pick_path destination directory "Zielordner für die Sicherung wählen"
+if empty destination
+    return 0
+end
+
+call fs.realpath source
+if failed last
+    call core.show_error "Quellordner konnte nicht aufgelöst werden."
+    return 1
+end
+call fs.realpath destination
+if failed last
+    call core.show_error "Zielordner konnte nicht aufgelöst werden."
+    return 1
+end
+call fs.assert_disjoint source destination
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+
+call fs.temp preview "velos-backup-preview."
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+call fs.temp preview_view "velos-backup-view."
+if failed last
+    call core.show_error "${last_error}"
+    call fs.remove preview
+    return 1
+end
+
+call process.capture preview 35 "timeout" "--kill-after=2s" "30s" "nice" "-n" "10" "rsync" "-a" "--delete" "--dry-run" "--itemize-changes" "--out-format=%i %n" "--stats" "--" "${source}/" "${destination}/"
+if failed last
+    call fs.tail preview tail 30
+    call core.show_error "Die Backup-Vorschau ist fehlgeschlagen oder hat das Zeitlimit überschritten:\n${last_error}\n${tail}"
+    call fs.remove preview preview_view
+    return 1
+end
+
+call fs.compose_preview preview_view preview source destination
+if failed last
+    call core.show_error "${last_error}"
+    call fs.remove preview preview_view
+    return 1
+end
+call ui.text_info preview_response preview_view "Backup-Vorschau" "Abbrechen:1" "Synchronisieren:0"
+call fs.remove preview preview_view
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+if declined preview_response
+    return 0
+end
+
+call ui.confirm accepted "Zielordner spiegeln?" "rsync --delete löscht im Ziel Dateien, die in der Quelle fehlen.\n\nQuelle: ${source}\nZiel: ${destination}\n\nDie Vorschau wurde angezeigt. Wirklich fortfahren?"
+if declined accepted
+    return 0
+end
+call process.progress source destination
+if failed last
+    call core.show_error "Backup fehlgeschlagen: ${last_error}."
+    return 1
+end
+call ui.info "Backup abgeschlossen" "Ordner wurden synchronisiert."
+return 0

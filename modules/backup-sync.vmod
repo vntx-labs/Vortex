@@ -1,0 +1,7 @@
+module backup-sync
+name "Backup & Sync"
+description "Ordner mit Vorschau synchronisieren"
+icon "drive-harddisk-symbolic"
+backend dsl
+order 80
+entry "backup-sync.vscript"

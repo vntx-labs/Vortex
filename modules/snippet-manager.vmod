@@ -1,0 +1,7 @@
+module snippet-manager
+name "Snippet-Hüter"
+description "Code und Text sicher speichern und bearbeiten"
+icon "document-edit-symbolic"
+backend dsl
+order 50
+entry "snippet-manager.vscript"

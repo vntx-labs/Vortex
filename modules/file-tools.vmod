@@ -1,0 +1,7 @@
+module file-tools
+name "Dateiwerkzeuge"
+description "Regex-Ersetzen und Dateien konvertieren"
+icon "folder-documents-symbolic"
+backend dsl
+order 60
+entry "file-tools.vscript"

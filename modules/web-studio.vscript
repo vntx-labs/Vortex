@@ -1,0 +1,5 @@
+call gui.web_studio
+if failed last
+    call core.show_error "Web Studio konnte nicht gestartet werden."
+end
+return 0

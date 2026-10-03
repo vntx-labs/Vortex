@@ -1,0 +1,7 @@
+module csv-workspace
+name "CSV-Workspace"
+description "CSV-Tabellen bearbeiten, durchsuchen und sortieren"
+icon "x-office-spreadsheet-symbolic"
+backend dsl
+order 10
+entry "csv-workspace.vscript"

@@ -1,0 +1,5 @@
+call gui.csv_workspace
+if failed last
+    call core.show_error "CSV Workspace konnte nicht gestartet werden."
+end
+return 0

@@ -1,0 +1,5 @@
+call module.local_server
+if failed last
+    call core.show_error "Der lokale Server konnte nicht gestartet werden."
+end
+return 0

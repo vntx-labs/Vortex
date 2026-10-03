@@ -1,0 +1,7 @@
+module port-process
+name "Port- & Prozessverwaltung"
+description "Ports prüfen und Prozesse verwalten"
+icon "utilities-system-monitor-symbolic"
+backend dsl
+order 70
+entry "port-process.vscript"

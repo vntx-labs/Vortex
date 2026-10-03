@@ -1,0 +1,94 @@
+call snippets.initialize
+if failed last
+    call core.show_error "${last_error}"
+    return 1
+end
+
+loop
+    call snippets.list items
+    if failed last
+        call core.show_error "${last_error}"
+        break
+    end
+    call ui.list selected response "Snippet-Hüter" "Code, Text, Regex und SQL sicher lokal verwalten – Einträge anlegen, bearbeiten, kopieren oder löschen." '["Bearbeiten:0","Kopieren:4","Neu:2","Löschen:3","Schließen:1"]' "${items}"
+    if failed last
+        call core.show_error "${last_error}"
+        break
+    end
+    if equals response "1"
+        break
+    end
+
+    if equals response "0"
+        if empty selected
+            call ui.info "Snippet auswählen" "Wähle zuerst einen Snippet zum Bearbeiten aus."
+        else
+            call snippets.get title body "${selected}"
+            if failed last
+                call core.show_error "${last_error}"
+            else
+                call ui.edit_text edited edit_saved "Snippet bearbeiten: ${title}" "Bearbeite den vollständigen Inhalt und speichere ihn anschließend." "${body}"
+                if equals edit_saved "yes"
+                    call ui.entry renamed rename_confirmed "Snippet benennen" "Name des Snippets:" "${title}"
+                    if equals rename_confirmed "yes"
+                        if empty renamed
+                            call core.show_error "Der Snippet-Name darf nicht leer sein."
+                        else
+                            call snippets.save "${selected}" "${renamed}" "${edited}"
+                            if failed last
+                                call core.show_error "${last_error}"
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if equals response "4"
+        if empty selected
+            call ui.info "Snippet auswählen" "Wähle zuerst einen Snippet zum Kopieren aus."
+        else
+            call snippets.get title body "${selected}"
+            if failed last
+                call core.show_error "${last_error}"
+            else
+                call system.clipboard "${body}"
+                if failed last
+                    call core.show_error "Der ausgewählte Snippet konnte nicht kopiert werden: ${last_error}"
+                else
+                    call ui.info "Kopiert" "Der Snippet liegt jetzt in deiner Zwischenablage."
+                end
+            end
+        end
+    end
+
+    if equals response "2"
+        call ui.entry title "Neuer Snippet" "Name:" ""
+        if empty title
+        else
+            call ui.edit_text body saved "Snippet-Inhalt" "Code, Text, Regex oder SQL eingeben:" ""
+            if equals saved "yes"
+                call snippets.save new "${title}" "${body}"
+                if failed last
+                    call core.show_error "${last_error}"
+                end
+            end
+        end
+    end
+
+    if equals response "3"
+        if empty selected
+            call ui.info "Snippet auswählen" "Wähle zuerst einen Snippet zum Löschen aus."
+        else
+            call ui.confirm confirmed "Snippet löschen?" "Diesen Eintrag wirklich löschen?"
+            if equals confirmed "yes"
+                call snippets.delete "${selected}"
+                if failed last
+                    call core.show_error "${last_error}"
+                end
+            end
+        end
+    end
+end
+return 0

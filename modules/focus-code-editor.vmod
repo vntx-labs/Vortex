@@ -1,0 +1,7 @@
+module focus-code-editor
+name "Focus Code Editor"
+description "Ablenkungsfrei Skripte schreiben, testen und speichern"
+icon "accessories-text-editor-symbolic"
+backend dsl
+order 20
+entry "focus-code-editor.vscript"

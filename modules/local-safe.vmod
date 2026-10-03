@@ -1,0 +1,7 @@
+module local-safe
+name "Lokaler Safe"
+description "Dateien und Ordner verschlüsseln"
+icon "security-high-symbolic"
+backend dsl
+order 100
+entry "local-safe.vscript"

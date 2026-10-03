@@ -1,0 +1,11 @@
+loop
+    call ui.list ACTION RESPONSE "Lokaler Safe" "Dateien oder Ordner mit GnuPG (AES-256) verschlüsseln bzw. entschlüsseln." '["Weiter:0","Abbrechen:1"]' '[["Datei verschlüsseln","Datei mit AES-256 schützen"],["Ordner verschlüsseln","Ordner als verschlüsseltes Archiv sichern"],["Datei entschlüsseln","Eine GPG-Datei wiederherstellen"],["Ordner-Safe entschlüsseln","Ein verschlüsseltes Ordnerarchiv wiederherstellen"],["←  Zurück","Zum Hauptmenü"]]'
+    if empty ACTION
+        break
+    end
+    if equals ACTION "←  Zurück"
+        break
+    end
+    call module.local_safe "${ACTION}"
+end
+return 0

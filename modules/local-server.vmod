@@ -1,0 +1,7 @@
+module local-server
+name "Lokaler Server"
+description "Einen Projektordner lokal bereitstellen"
+icon "network-server-symbolic"
+backend dsl
+order 40
+entry "local-server.vscript"
